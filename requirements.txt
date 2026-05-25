@@ -1,0 +1,6 @@
+opencv-python>=4.5.0
+numpy>=1.20.0
+mss>=6.0.0
+keyboard>=0.13.5
+customtkinter>=5.0.0
+pywin32>=300

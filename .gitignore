@@ -1,0 +1,39 @@
+# Logs
+*.log
+auto_gta5vn.log
+
+# Config (user-specific)
+config.json
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+*.egg-info/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+.kiro/
+*.swp
+*.swo
+*~
+
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# PyInstaller
+_internal/
+*.spec
+
+# Backup
+toolgta_backup.py
