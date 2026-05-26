@@ -2,8 +2,10 @@
 *.log
 auto_gta5vn.log
 
-# Config (user-specific)
+# Config (user-specific, auto-created)
 config.json
+config.json.bak
+config.json.tmp
 
 # Python
 __pycache__/
@@ -17,6 +19,7 @@ venv/
 *.egg-info/
 dist/
 build/
+build_temp/
 
 # IDE
 .vscode/
@@ -37,3 +40,10 @@ _internal/
 
 # Backup
 toolgta_backup.py
+
+# Tests
+tests/
+.pytest_cache/
+
+# Build artifacts
+templates.zip

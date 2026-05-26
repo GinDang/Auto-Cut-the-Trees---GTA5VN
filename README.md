@@ -1,27 +1,40 @@
 # AUTO GTA5VN - Auto Cut the Trees
 
-Tool tu dong chat cay trong GTA5VN (FiveM). Nhan dien phim E / F / Y tren man hinh va tu dong nhan phim.
+Tool tu dong chat cay trong GTA5VN (FiveM). Nhan dien phim, ghi route, GPS navigation, va tu dong hoa 80-100%.
 
 ![Python](https://img.shields.io/badge/Python-3.10+-blue?logo=python&logoColor=white)
 ![OpenCV](https://img.shields.io/badge/OpenCV-4.x-green?logo=opencv&logoColor=white)
 ![Platform](https://img.shields.io/badge/Platform-Windows-lightgrey?logo=windows&logoColor=white)
+![Version](https://img.shields.io/badge/Version-5.0-purple)
 
 ---
 
-## Tinh nang
+## Tinh nang chinh
 
-- **3 che do hoat dong:**
-  - `Auto Detect` - Nhan dien E / F / Y tu dong
-  - `Auto E` - Chi nhan dien va nhan E
-  - `Macro` - Nhan E > F > Y trinh tu (nhanh nhat)
-- **Nhan dien balo day:**
-  - Phat hien thong bao hong in-game bang mau sac (HSV)
-  - Template matching (thu muc BALO/)
-  - Uoc tinh tu so lan nhan phim
-- **Ho tro da resolution** (1080p, 1440p, 4K...)
-- **Giao dien dieu khien ngang** - Dark theme, hien dai
-- **Cai dat tuy chinh** - Confidence, macro delay, vung quet, balo max...
-- **F10** - Phim tat dung nhanh
+### 4 che do hoat dong
+
+| Che do | Mo ta | Hotkey |
+|--------|-------|--------|
+| **[1] Auto Detect** | Nhan dien E / F / Y tren man hinh | F7 |
+| **[2] Auto E** | Chi nhan dien va nhan E | F8 |
+| **[3] Macro** | Nhan E > F > Y trinh tu (nhanh nhat) | F9 |
+| **[4] Route Auto** | Tu dong di chuyen + chat cay + ban go | Ctrl+F6 |
+
+### Route System (v5.0)
+- **Route Recorder**: Ghi lai toan bo hanh trinh (phim + chuot)
+- **Route Player**: Tu dong replay voi checkpoint verification
+- **GPS Navigation**: Doc vach chi duong tren minimap de tu sua huong
+- **Auto-sell**: Tu dong ban go khi balo day, quay lai tiep tuc
+- **Resolution Scaling**: Ghi o 1080p, chay o 1440p → tu dieu chinh
+- **Game Focus Safety**: Tu dong pause khi alt-tab, resume khi quay lai
+
+### Tinh nang khac
+- **Nhan dien balo day**: HSV color + template matching
+- **ROI Tracking**: Thu nho vung quet de tang toc
+- **Adaptive Confidence**: Tu dieu chinh nguong nhan dien
+- **GPU Acceleration**: Dung CUDA/OpenCL neu co
+- **Humanized Input**: Nhan phim giong nguoi that
+- **Multi-scale**: Tim template o nhieu ty le
 
 ---
 
@@ -29,32 +42,22 @@ Tool tu dong chat cay trong GTA5VN (FiveM). Nhan dien phim E / F / Y tren man hi
 
 - **OS:** Windows 10/11
 - **Python:** 3.10 tro len
-- **Game:** GTA5VN (FiveM) chay o che do **Windowed** hoac **Borderless**
+- **Game:** GTA5VN (FiveM) — Windowed hoac Borderless
+- **RAM:** 4GB+
+- **Luu y:** Hoat dong tren may tiem net (portable, khong can cai dat)
 
 ---
 
 ## Cai dat
 
-### Buoc 1: Cai Python
-
-Tai va cai Python tu [python.org](https://www.python.org/downloads/)
-
-> **Luu y:** Tick chon **"Add Python to PATH"** khi cai dat.
-
-### Buoc 2: Clone repository
+### Buoc 1: Clone repository
 
 ```bash
 git clone https://github.com/GinDang/Auto-Cut-the-Trees---GTA5VN.git
 cd Auto-Cut-the-Trees---GTA5VN
 ```
 
-### Buoc 3: Cai thu vien
-
-```bash
-pip install opencv-python numpy mss keyboard customtkinter pywin32
-```
-
-Hoac su dung file requirements:
+### Buoc 2: Cai thu vien
 
 ```bash
 pip install -r requirements.txt
@@ -65,120 +68,67 @@ pip install -r requirements.txt
 ## Chay tool
 
 ```bash
-python toolgta.py
+python -m toolgta
 ```
 
-Tool se khoi dong voi giao dien dieu khien:
+---
+
+## Giao dien
 
 ```
-+--------------------------------------------------------------------+
-| AUTO GTA5VN   * Cho khoi chay   FPS --  Score --     v3.0  1920x1080|
-+-------------+------------------------+-----------------------------+
-| CHE DO      |  E  0    F  0    Y  0  |  LOG                        |
-|             |                        |  [Sys] Templates: E=39...   |
-| [1] Auto    |  BALO         0/30 go  |  [Sys] Color detect: ON     |
-| [2] Auto E  |  ==================== |  [Sys] F10 = Dung auto      |
-| [3] Macro   |                        |                             |
-|             |                        |                             |
-| CAI DAT     |                        |                             |
-| TAT F10     |                        |                             |
-+-------------+------------------------+-----------------------------+
-| Settings drawer (an, nhan CAI DAT de mo)                           |
-+--------------------------------------------------------------------+
++----------------------------------------------------------------------+
+| AUTO GTA5VN  ● Route chinh — 45% — Loop #2   FPS 18  v5.0  1920x1080|
++-----------+------------------------+-----------+---------------------+
+| CHE DO    |  E  12   F  5   Y  8  | ROUTES    | LOG                 |
+|           |                       |           |                     |
+| [1] Auto  |  BALO    18/30 go     | main_farm | [Sys] v5.0          |
+| [2] AutoE |  ===============     | sell_npc  | [Route] Di chuyen...|
+| [3] Macro |                       |           | [Route] Chat cay #3 |
+| [4] Route |  THONG KE PHIEN      | [● REC]   | [FSM] NAV → CUT    |
+|           |  ⏱ 00:12:34          | [▶ Play]  |                     |
+| CAPTURE   |  ⚡ Det: 8.2ms        | [■ Stop]  |                     |
+| CAI DAT   |  🌳 18/30 go          | [🗑 Xoa]  |                     |
+| TAT AUTO  |                       |           |                     |
++-----------+------------------------+-----------+---------------------+
+| Settings drawer (an di, nhan CAI DAT de mo)                          |
++----------------------------------------------------------------------+
 ```
 
 ---
 
 ## Huong dan su dung
 
-### 1. Mo game truoc
+### Che do 1/2/3 (co ban)
 
-Bat GTA5VN (FiveM) va vao server. Di den khu vuc co cay.
+1. Mo game truoc, di den khu vuc co cay
+2. Chon che do (click hoac F7/F8/F9)
+3. Tool tu dong nhan dien phim va nhan tuong ung
+4. F10 hoac click **TAT AUTO** de dung
 
-### 2. Chon che do
+### Che do 4: Route Auto (nang cao)
 
-| Che do | Mo ta | Khi nao dung |
-|--------|-------|-------------|
-| **Auto Detect** | Nhan dien E/F/Y tren man hinh | Pho thong, an toan |
-| **Auto E** | Chi nhan dien phim E | Khi chi can nhan E |
-| **Macro** | Nhan E > F > Y lien tuc | Nhanh nhat, it an toan |
-
-### 3. Bat dau
-
-- Click vao nut che do (1/2/3)
-- Tool se tu dong giu phim W (di chuyen) va . (chay)
-- Khi phat hien phim tren man hinh, tool se nhan phim tuong ung
-
-### 4. Dung
-
-- Nhan **F10** hoac click **TAT AUTO**
-- Tool se tha tat ca phim va dung
-
-### 5. Balo day
-
-Khi balo day, tool se:
-- Hien thong bao canh bao
-- Cho ban chon **Tiep tuc** hoac **Dung**
-- Neu bat "Tiep tuc khi day" trong cai dat, tool chi canh bao 1 lan va tiep tuc
-
----
-
-## Cai dat nang cao
-
-Click **CAI DAT** de mo panel cai dat:
-
-| Tham so | Mo ta | Mac dinh |
-|---------|-------|----------|
-| Confidence | Nguong nhan dien (cao = chinh xac hon) | 0.55 |
-| Macro (ms) | Delay giua cac phim o che do Macro | 30ms |
-| Balo max | So go toi da truoc khi canh bao | 30 |
-| Check (frames) | Kiem tra balo moi bao nhieu frame | 60 |
-| Tiep tuc khi day | Tu dong tiep tuc khi balo day | OFF |
-| Detect region | Vung quet nhan dien phim (% man hinh) | Center |
-| Notif region | Vung quet thong bao (% man hinh) | Top-right |
-| Game keywords | Tu khoa cua so game | GTA, FiveM... |
-
----
-
-## Cau truc thu muc
+#### Buoc 1: Ghi route (chi can 1 lan)
 
 ```
-Auto-Cut-the-Trees---GTA5VN/
-|-- toolgta.py          # File chinh
-|-- start_e.png         # Template bat dau
-|-- config.json         # Cai dat (tu dong tao)
-|-- auto_gta5vn.log     # Log file
-|-- requirements.txt    # Thu vien can thiet
-|-- E/                  # Templates phim E (e_0.png, e_1.png...)
-|-- F/                  # Templates phim F
-|-- Y/                  # Templates phim Y
-|-- BALO/               # Templates thong bao balo day
+1. Nhap ten route → Bam ● REC
+2. Chuyen sang game → bat dau di chuyen
+3. Den cay → Ctrl+F8 (danh dau cay)
+4. Chat cay binh thuong
+5. Di den cay tiep → Ctrl+F8
+6. Khi muon danh dau duong di ban → Ctrl+F9
+7. Di den NPC ban
+8. Quay lai tool → ⏹ STOP
 ```
 
----
+#### Buoc 2: Tu dong hoa
 
-## Xu ly loi thuong gap
-
-### Tool khong nhan dien duoc phim
-
-- Tang kich thuoc cua so game
-- Giam `Confidence` xuong 0.40-0.50
-- Dam bao game chay Windowed/Borderless (khong Fullscreen)
-
-### Tool nhan dien sai
-
-- Tang `Confidence` len 0.60-0.70
-- Kiem tra vung Detect region co dung khong
-
-### Loi "Game khong active"
-
-- Click vao cua so game de focus
-- Kiem tra `Game keywords` co chua ten cua so game
-
-### Balo day khong phat hien
-
-- Them template vao thu muc `BALO/` (chup man hinh thong bao balo day)
-- Dam bao `Color detect: ON` trong log
+```
+1. Chon route trong danh sach (click)
+2. Bam ▶ Play hoac Ctrl+F6
+3. Tool tu dong:
+   Di chuyen → Chat cay → Di chuyen → Chat → ...
+   Balo day → Di ban → Quay lai → Loop ♾️
+```
 
 ---
 
@@ -186,16 +136,117 @@ Auto-Cut-the-Trees---GTA5VN/
 
 | Phim | Chuc nang |
 |------|----------|
-| F10 | Dung tool |
+| **F7** | Mode 1 — Auto Detect |
+| **F8** | Mode 2 — Auto E |
+| **F9** | Mode 3 — Macro |
+| **Ctrl+F6** | Mode 4 — Route Auto |
+| **F10** | Dung tool |
+| **F11** | Pause / Tiep tuc |
+| **Ctrl+F7** | Capture template |
+| **Ctrl+F8** | Danh dau cay (khi ghi route) |
+| **Ctrl+F9** | Danh dau NPC ban (khi ghi route) |
+
+---
+
+## Cai dat nang cao
+
+Click **CAI DAT** de mo panel cai dat:
+
+### Co ban (v4.0)
+
+| Tham so | Mo ta | Mac dinh |
+|---------|-------|----------|
+| Confidence | Nguong nhan dien (cao = chinh xac hon) | 0.55 |
+| Macro (ms) | Delay giua cac phim che do Macro | 30 |
+| Balo max | So go toi da truoc khi canh bao | 30 |
+| Tiep tuc khi day | Tu dong tiep tuc khi balo day | OFF |
+| Detect region | Vung quet nhan dien phim (% man hinh) | Center |
+| Game keywords | Tu khoa cua so game | GTA, FiveM... |
+
+### Route (v5.0)
+
+| Tham so | Mo ta | Mac dinh |
+|---------|-------|----------|
+| GPS Nav | Bat/tat GPS navigation | ON |
+| Self-correct | Bat/tat checkpoint verification | ON |
+| Route Loop | Bat/tat loop vo han | ON |
+| Mouse sensitivity | Do nhay chuot khi xoay camera (0.5–8.0) | 2.5 |
+| Route Speed | Toc do replay (0.5x–3.0x) | 1.0x |
+| Cutting Timeout | Thoi gian cho chat cay (10–90s) | 30s |
+
+---
+
+## Cau truc thu muc
+
+```
+Auto-Cut-the-Trees---GTA5VN/
+├── toolgta/                    # Main package
+│   ├── __init__.py             # Package exports
+│   ├── __main__.py             # Entry point
+│   ├── constants.py            # Config defaults, colors, hotkeys
+│   ├── config.py               # Load/save/validate config
+│   ├── engine.py               # Core automation engine (Mode 1/2/3)
+│   ├── capture.py              # Screen capture manager
+│   ├── template_manager.py     # Template loading & matching
+│   ├── stats.py                # Session statistics
+│   ├── utils.py                # Utilities (screen, game focus)
+│   ├── gpu_utils.py            # GPU acceleration (CUDA/OpenCL)
+│   ├── state_machine.py        # v5.0 — FSM (IDLE/CUT/NAV/SELL/STUCK)
+│   ├── mouse_control.py        # v5.0 — Camera rotation (ctypes)
+│   ├── checkpoint.py           # v5.0 — Minimap checkpoint verification
+│   ├── route_recorder.py       # v5.0 — Route recording
+│   ├── route_player.py         # v5.0 — Route playback
+│   ├── gps_navigator.py        # v5.0 — GPS line detection
+│   └── gui/
+│       ├── app.py              # Main window
+│       ├── topbar.py           # Status bar
+│       ├── controls.py         # Mode buttons
+│       ├── stats_panel.py      # E/F/Y counters + balo
+│       ├── log_panel.py        # Log textbox
+│       ├── notification.py     # Alert bar
+│       ├── settings.py         # Settings drawer
+│       ├── capture_dialog.py   # Template capture dialog
+│       └── route_panel.py      # v5.0 — Route manager UI
+├── routes/                     # Saved routes (auto-created)
+├── E/ F/ Y/ BALO/              # Template images
+├── config.json                 # User settings (auto-created)
+├── auto_gta5vn.log             # Log file
+├── requirements.txt            # Python dependencies
+└── README.md
+```
+
+---
+
+## Xu ly loi thuong gap
+
+### Tool khong nhan dien duoc phim
+- Giam `Confidence` xuong 0.40–0.50
+- Dam bao game chay **Windowed/Borderless** (khong Fullscreen)
+- Kiem tra vung Detect region co dung khong
+
+### Route bi ket (stuck)
+- Dieu chinh `Mouse sensitivity` trong Settings
+- Giam `Checkpoint threshold` neu checkpoint khong match
+- Thu ghi route moi o khu vuc it vat can
+
+### GPS khong hoat dong
+- Kiem tra minimap hinh **vuong** (khong tron)
+- Dieu chinh mau GPS (`gps_color_lower/upper`) phu hop server
+- Dam bao vach chi duong mau **tim/hong** hien tren minimap
+
+### Balo day khong phat hien
+- Them template vao thu muc `BALO/`
+- Dam bao `Color detect: ON` trong log
+- Kiem tra `inventory_region` trong config
 
 ---
 
 ## License
 
-MIT License - Su dung tu do.
+MIT License — Su dung tu do.
 
 ---
 
 ## Tac gia
 
-**GinDang** - [GitHub](https://github.com/GinDang)
+**GinDang** — [GitHub](https://github.com/GinDang)
