@@ -363,11 +363,11 @@ class AutoEngine:
             self.ui_cb(evt, data)
 
     def _update_wood_estimate(self) -> None:
-        total = sum(self.counters.values())
-        self.wood_estimate = total // 3
+        # 1 wood = 1 complete E+F+Y cycle → use min of all counters
+        self.wood_estimate = min(self.counters.values()) if self.counters else 0
         self._notify(
             "wood",
-            {"count": self.wood_estimate, "max": self.config.get("max_wood_capacity", 30)},
+            {"count": self.wood_estimate, "max": self.config.get("max_wood_capacity", 39)},
         )
 
     # ------------------------------------------------------------------
@@ -440,27 +440,10 @@ class AutoEngine:
                         "status", {"text": "DUNG - Balo day!", "state": "inventory_full"}
                     )
 
-            # --- Estimate-based fallback ------------------------------
-            if (
-                not is_full
-                and self.wood_estimate >= max_wood
-                and not self.inventory_full_notified
-            ):
-                logger.warning(
-                    "Wood estimate reached max: %d/%d", self.wood_estimate, max_wood
-                )
-                self._notify(
-                    "inventory_full",
-                    {"score": 0, "estimated": True, "method": "estimate"},
-                )
-                if continue_full:
-                    self.inventory_full_notified = True
-                else:
-                    self.inventory_paused = True
-                    self.inventory_full_notified = True
-                    self._notify(
-                        "status", {"text": "DUNG - Balo day!", "state": "inventory_full"}
-                    )
+            # --- Estimate-based fallback DISABLED ----------------------
+            # Only color detection + BALO template matching are used.
+            # The estimate fallback was removed to avoid false positives
+            # caused by E-counter inflation from start-screen spam.
 
         except Exception as exc:
             logger.error("Inventory check error: %s", exc)
@@ -503,6 +486,8 @@ class AutoEngine:
         macro_idx = 0
         frame_count = 0
         last_inv_check = 0
+        last_start_press = 0.0
+        START_COOLDOWN = 3.0  # seconds before re-checking start screen
 
         self._notify(
             "status", {"text": "Mode %d dang chay" % mode, "state": "running"}
@@ -589,7 +574,10 @@ class AutoEngine:
                 # ======================================================
 
                 # --- Start-screen fast-press --------------------------
-                if self.tmgr.start_template is not None:
+                if (
+                    self.tmgr.start_template is not None
+                    and (time.perf_counter() - last_start_press) >= START_COOLDOWN
+                ):
                     try:
                         img = np.array(sct.grab(mon_start))
                         gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
@@ -600,6 +588,8 @@ class AutoEngine:
                                 else:
                                     keyboard.send("e")
                                 time.sleep(0.007)
+                            last_start_press = time.perf_counter()
+                            logger.debug("Start-screen detected — cooldown %.0fs", START_COOLDOWN)
                             continue
                     except Exception:
                         pass

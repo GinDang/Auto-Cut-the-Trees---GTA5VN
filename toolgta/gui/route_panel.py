@@ -79,7 +79,7 @@ class RoutePanel(ctk.CTkFrame):
 
         # ── Header ───────────────────────────────────────────
         hdr_frame = ctk.CTkFrame(self, fg_color="transparent")
-        hdr_frame.pack(fill="x", **pad, pady=(8, 4))
+        hdr_frame.pack(fill="x", padx=8, pady=(8, 4))
 
         ctk.CTkLabel(
             hdr_frame, text="🗺  Route Manager",
@@ -173,7 +173,7 @@ class RoutePanel(ctk.CTkFrame):
 
         # ── Play controls ────────────────────────────────────
         play_frame = ctk.CTkFrame(self, fg_color="transparent")
-        play_frame.pack(fill="x", **pad, pady=(4, 2))
+        play_frame.pack(fill="x", padx=8, pady=(4, 2))
 
         self._play_btn = ctk.CTkButton(
             play_frame, text="▶ Play", width=80, height=30,
@@ -197,7 +197,7 @@ class RoutePanel(ctk.CTkFrame):
             self, height=6, corner_radius=3,
             fg_color=C["bg_card_alt"], progress_color=C["purple"],
         )
-        self._progress_bar.pack(fill="x", **pad, pady=(2, 2))
+        self._progress_bar.pack(fill="x", padx=8, pady=(2, 2))
         self._progress_bar.set(0)
 
         self._status_label = ctk.CTkLabel(
@@ -205,7 +205,7 @@ class RoutePanel(ctk.CTkFrame):
             font=ctk.CTkFont(size=11),
             text_color=C["text_dim"], anchor="w",
         )
-        self._status_label.pack(fill="x", **pad, pady=(0, 8))
+        self._status_label.pack(fill="x", padx=8, pady=(0, 8))
 
     # ------------------------------------------------------------------
     #  Route list

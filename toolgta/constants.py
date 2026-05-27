@@ -57,7 +57,7 @@ DEFAULT_CONFIG: dict = {
 
     # --- Timing & limits ---
     "macro_delay_ms": 30,
-    "max_wood_capacity": 30,
+    "max_wood_capacity": 39,
     "continue_when_full": False,
     "inventory_check_interval": 60,
 
