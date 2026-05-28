@@ -120,9 +120,9 @@ class AdaptiveThreshold:
 
     def __init__(
         self,
-        base: float = 0.55,
+        base: float = 0.65,
         window: int = 100,
-        min_threshold: float = 0.35,
+        min_threshold: float = 0.50,
         max_threshold: float = 0.80,
     ) -> None:
         self.base: float = base
@@ -469,7 +469,7 @@ class AutoEngine:
             if use_adaptive
             else self.config.get("confidence_threshold", 0.55)
         )
-        start_thr = self.config.get("start_threshold", 0.68)
+        start_thr = self.config.get("start_threshold", 0.78)
         inv_thr = self.config.get("inventory_threshold", 0.60)
         macro_delay = self.config.get("macro_delay_ms", 30) / 1000.0
         game_kw: list = self.config.get("game_window_keywords", [])
@@ -487,7 +487,19 @@ class AutoEngine:
         frame_count = 0
         last_inv_check = 0
         last_start_press = 0.0
-        START_COOLDOWN = 3.0  # seconds before re-checking start screen
+        START_COOLDOWN = 5.0  # seconds before re-checking start screen
+
+        # --- Active key tracking ---
+        # Once we detect which key the game shows (E/F/Y), we "lock on"
+        # and spam that key rapidly without re-scanning every template.
+        # After several consecutive misses we fall back to full scan.
+        active_key: str = ""          # currently locked-on key ("" = none)
+        active_key_hits: int = 0      # consecutive hits on the active key
+        active_key_misses: int = 0    # consecutive misses on the active key
+        ACTIVE_KEY_MAX_MISSES: int = 5   # misses before resetting
+        is_chopping: bool = False     # True after start E, until idle timeout
+        last_match_time: float = 0.0  # timestamp of last successful match
+        CHOPPING_TIMEOUT: float = 8.0  # seconds of no matches before "idle"
 
         self._notify(
             "status", {"text": "Mode %d dang chay" % mode, "state": "running"}
@@ -573,23 +585,41 @@ class AutoEngine:
                 # MODE 1 & 2: Template matching
                 # ======================================================
 
+                # --- Check chopping timeout → reset to idle -----------
+                if is_chopping and (now - last_match_time) > CHOPPING_TIMEOUT:
+                    logger.info("Chopping timeout (%.0fs no match) -> idle", CHOPPING_TIMEOUT)
+                    is_chopping = False
+                    active_key = ""
+                    active_key_hits = 0
+                    active_key_misses = 0
+
                 # --- Start-screen fast-press --------------------------
+                # Only check start screen when NOT actively chopping
                 if (
-                    self.tmgr.start_template is not None
-                    and (time.perf_counter() - last_start_press) >= START_COOLDOWN
+                    not is_chopping
+                    and self.tmgr.start_template is not None
+                    and (now - last_start_press) >= START_COOLDOWN
                 ):
                     try:
                         img = np.array(sct.grab(mon_start))
                         gray = cv2.cvtColor(img, cv2.COLOR_BGRA2GRAY)
                         if self.tmgr.check_start(gray, start_thr):
-                            for _ in range(10):
+                            # Press E a few times to start chopping
+                            for _ in range(3):
                                 if use_humanize:
                                     humanized_send("e")
                                 else:
                                     keyboard.send("e")
-                                time.sleep(0.007)
-                            last_start_press = time.perf_counter()
-                            logger.debug("Start-screen detected — cooldown %.0fs", START_COOLDOWN)
+                                time.sleep(0.05)
+                            last_start_press = now
+                            is_chopping = True
+                            last_match_time = now
+                            active_key = ""
+                            active_key_hits = 0
+                            active_key_misses = 0
+                            logger.info("Start-screen detected -> begin chopping")
+                            # Small delay for game to transition
+                            time.sleep(0.3)
                             continue
                     except Exception:
                         pass
@@ -613,9 +643,17 @@ class AutoEngine:
                     keyboard.press(".")
                     keys_pressed = True
 
-                # --- Determine scan keys (with prediction) ------------
-                scan_keys = ["e", "f", "y"] if mode == 1 else ["e"]
-                scan_keys = self._predictor.get_prioritized_keys(scan_keys)
+                # --- Determine scan keys ------------------------------
+                if active_key:
+                    # We have a locked-on key — scan ONLY that key first
+                    # for speed, but also include all keys for comparison
+                    scan_keys = [active_key] + [
+                        k for k in (["e", "f", "y"] if mode == 1 else ["e"])
+                        if k != active_key
+                    ]
+                else:
+                    scan_keys = ["e", "f", "y"] if mode == 1 else ["e"]
+                    scan_keys = self._predictor.get_prioritized_keys(scan_keys)
 
                 # --- Adaptive threshold --------------------------------
                 if use_adaptive:
@@ -642,6 +680,26 @@ class AutoEngine:
                     self._roi_tracker.update(matched, best_pos)
 
                 if matched:
+                    # --- Key detected! ---
+                    is_chopping = True
+                    last_match_time = now
+
+                    if best_key == active_key:
+                        # Still the same key → increment hits
+                        active_key_hits += 1
+                        active_key_misses = 0
+                    else:
+                        # Different key detected → switch to it
+                        if active_key:
+                            logger.info(
+                                "Key switch: %s -> %s (score=%.4f)",
+                                active_key.upper(), best_key.upper(), best_score,
+                            )
+                        active_key = best_key
+                        active_key_hits = 1
+                        active_key_misses = 0
+
+                    # Press the detected key
                     if use_humanize:
                         humanized_send(best_key)
                     else:
@@ -653,16 +711,28 @@ class AutoEngine:
                     self._predictor.record(best_key)
                     self._stats.record_press(best_key)
                     logger.info(
-                        "Mode %d -> %s (%.4f, %.1fms)",
+                        "Mode %d -> %s (%.4f, %.1fms) [active=%s, hits=%d]",
                         mode, best_key.upper(), best_score, elapsed,
+                        active_key.upper(), active_key_hits,
                     )
 
+                    # Fast repeat — keep spamming the active key
                     if use_humanize:
-                        time.sleep(humanized_delay(15))
+                        time.sleep(humanized_delay(10))
                     else:
-                        time.sleep(0.015)
+                        time.sleep(0.010)
                 else:
-                    pass  # no special tracking for misses
+                    # --- No match ---
+                    if active_key:
+                        active_key_misses += 1
+                        if active_key_misses >= ACTIVE_KEY_MAX_MISSES:
+                            logger.debug(
+                                "Active key %s lost (%d misses) -> reset",
+                                active_key.upper(), active_key_misses,
+                            )
+                            active_key = ""
+                            active_key_hits = 0
+                            active_key_misses = 0
                     time.sleep(0.020)
 
         except Exception as exc:
@@ -673,3 +743,4 @@ class AutoEngine:
             self.paused = False
             self._stats.stop()
             self._notify("status", {"text": "Da dung", "state": "stopped"})
+

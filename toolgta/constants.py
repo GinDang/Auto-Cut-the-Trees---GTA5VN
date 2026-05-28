@@ -51,8 +51,8 @@ DEFAULT_CONFIG: dict = {
     # --- Detection thresholds ---
     "notification_color_detect": True,
     "notification_color_ratio": 0.03,
-    "confidence_threshold": 0.55,
-    "start_threshold": 0.68,
+    "confidence_threshold": 0.65,
+    "start_threshold": 0.78,
     "inventory_threshold": 0.60,
 
     # --- Timing & limits ---
@@ -69,7 +69,7 @@ DEFAULT_CONFIG: dict = {
     "humanize_jitter": 0.3,
     "roi_tracking": True,
     "roi_padding": 50,
-    "adaptive_confidence": True,
+    "adaptive_confidence": False,
     "gpu_acceleration": True,
     "sound_alert": True,
     "multi_scale": True,

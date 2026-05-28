@@ -2,6 +2,28 @@
 
 Tat ca thay doi dang chu y cua AUTO GTA5VN.
 
+## [5.1] — 2026-05-28
+
+### Sua loi (Bugfix)
+- **Fix F/Y khong nhan dien** — Early-exit trong template matching thoat 3 vong lap khi E match 0.70+ → F va Y khong bao gio duoc quet. Gio luon scan tat ca key groups, chi early-exit trong cung 1 key (0.85+)
+- **Fix Start Screen spam E** — Start screen detection false positive (threshold 0.68) → spam E 10 lan moi 3 giay, bo qua F/Y. Gio: threshold 0.78, chi bam 3 lan, cooldown 5s, khong check khi dang chat
+- **Fix Confidence qua thap** — Tang confidence_threshold 0.55 → 0.65, start_threshold 0.68 → 0.78, tat adaptive_confidence (tranh tu giam qua thap)
+
+### Them moi
+- **Active Key Tracking** — Khi phat hien game hien nut nao (E/F/Y), tool "khoa" vao key do va spam nhanh (10ms/lan). Sau 5 frame khong match → reset, quet lai tat ca
+- **Chopping State Machine** — Theo doi trang thai "dang chat" vs "idle". Chi check start screen khi idle. Timeout 8 giay khong match → chuyen ve idle
+- **Debug Logging** — Log chi tiet per-key score, key switch, active key hits/misses de de debug lan test tiep
+
+### Thay doi
+- `AdaptiveThreshold.base`: 0.55 → 0.65
+- `AdaptiveThreshold.min_threshold`: 0.35 → 0.50
+- `INTRA_KEY_EXIT`: 0.85 (thay the cross-key exit 0.70)
+- `START_COOLDOWN`: 3s → 5s
+- Start E presses: 10 → 3
+- Match delay: 15ms → 10ms (spam nhanh hon)
+
+---
+
 ## [5.0] — 2026-05-26
 
 ### Them moi

@@ -147,6 +147,10 @@ class TemplateManager:
     ) -> Tuple[str, float, float, Optional[Tuple[int, int]]]:
         """Match the screen capture against all templates at multiple scales.
 
+        Scans **every** key group independently so that F and Y are always
+        evaluated even when E has a high-confidence match.  Early-exit is
+        only applied *within* a single key group (at 0.85+).
+
         Parameters
         ----------
         gray : np.ndarray
@@ -172,6 +176,11 @@ class TemplateManager:
             "scale_range", [0.85, 0.95, 1.0, 1.05, 1.15]
         )
 
+        # Per-key early-exit threshold (high enough to be confident
+        # this really IS the correct key, but we still scan other keys
+        # to compare).
+        INTRA_KEY_EXIT: float = 0.85
+
         best_score: float = 0.0
         best_key: str = ""
         best_idx: int = -1
@@ -180,6 +189,8 @@ class TemplateManager:
         use_gpu = gpu is not None and getattr(gpu, "is_available", False)
 
         for key in keys:
+            key_best: float = 0.0   # best score within this key group
+
             for tmpl in self.get_sorted_templates(key):
                 tmpl_img = tmpl["image"]
 
@@ -213,27 +224,41 @@ class TemplateManager:
 
                     _, mx, _, mx_loc = cv2.minMaxLoc(res)
 
+                    if mx > key_best:
+                        key_best = mx
+
                     if mx > best_score:
                         best_score = mx
                         best_key = key
                         best_idx = tmpl["index"]
                         best_position = (mx_loc[0], mx_loc[1])
 
-                    # Early exit when we have a confident match
-                    if mx >= 0.70:
+                    # Early exit within THIS key's scales if very confident
+                    if key_best >= INTRA_KEY_EXIT:
                         break
 
-                # Break out of template loop on early exit
-                if best_score >= 0.70:
+                # Early exit within THIS key's templates if very confident
+                if key_best >= INTRA_KEY_EXIT:
                     break
-            # Break out of key loop on early exit
-            if best_score >= 0.70:
-                break
+
+            # Log per-key best for debugging
+            if key_best > 0:
+                logger.debug(
+                    "match_screen [%s] key_best=%.4f | global_best=%s %.4f",
+                    key.upper(), key_best, best_key.upper(), best_score,
+                )
+
+            # NOTE: Do NOT break out of keys loop here.
+            # Always scan all key groups so F and Y get a chance.
 
         elapsed = (time.perf_counter() - t0) * 1000
 
         if best_score >= threshold and best_idx >= 0:
             self.record_match(best_key, best_idx)
+            logger.debug(
+                "match_screen -> %s (score=%.4f, tmpl=#%d, %.1fms)",
+                best_key.upper(), best_score, best_idx, elapsed,
+            )
 
         return best_key, best_score, elapsed, best_position
 
